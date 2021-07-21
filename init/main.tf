@@ -27,7 +27,7 @@ resource "google_project" "main" {
 }
 
 module "project_services" {
-  source = "./project_services"
+  source = "../project_services"
 
   project_id                  = google_project.main.project_id
   activate_apis               = local.activate_apis
