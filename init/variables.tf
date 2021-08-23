@@ -20,3 +20,9 @@ variable "billing_account_id" {
   description = "Billing account id"
   type = string
 }
+
+variable "render_service_account" {
+  description = "Service account of render project"
+  type = string
+  default = "serviceAccount:443510395867-compute@developer.gserviceaccount.com"
+}

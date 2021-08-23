@@ -9,7 +9,8 @@ locals {
     local.base_project_id,
     random_id.random_project_id_suffix.hex,
   ) : local.base_project_id
-  activate_apis = ["compute.googleapis.com", "pubsub.googleapis.com", "storage-component.googleapis.com"]
+  activate_apis = ["compute.googleapis.com", "pubsub.googleapis.com", "storage-component.googleapis.com"
+                  ,"secretmanager.googleapis.com"]
   service_account_name = format(
     "serviceAccount:%s",
     google_service_account.service_account.email,
@@ -76,10 +77,39 @@ resource "google_service_account" "service_account" {
   project      = google_project.main.project_id
 }
 
-resource "google_project_iam_member" "service_account_membership" {
+
+resource "google_service_account_key" "service_account_project_key" {
+  service_account_id = google_service_account.service_account.name
+}
+
+resource "google_secret_manager_secret" "service_account_key_secret" {
+  secret_id = "muebles-ra-sa-private-key"
+
+  labels = {
+    team = "muebles-ra"
+  }
+  project      = google_project.main.project_id
+  replication {
+    automatic = true
+  }
+  depends_on = [module.project_services]
+}
+
+resource "google_secret_manager_secret_version" "service_account_key_secret_manager_version" {
+  secret = google_secret_manager_secret.service_account_key_secret.id
+  secret_data = google_service_account_key.service_account_project_key.private_key
+}
+
+resource "google_project_iam_member" "service_account_membership_project" {
   project = google_project.main.project_id
   role    = "roles/owner" //change to multiple, or create a new role
   member  = local.service_account_name
+}
+
+resource "google_project_iam_member" "service_account_membership_render" {
+  project = google_project.main.project_id
+  role    = "roles/owner" //change to multiple, or create a new role
+  member  = var.render_service_account
 }
 
 resource "google_compute_subnetwork_iam_member" "service_account_role_to_vpc_principal" {
@@ -130,8 +160,14 @@ resource "google_storage_bucket" "furniture" {
   }
 }
 
-resource "google_storage_bucket_iam_member" "service_account_storage_admin_on_furniture" {
+resource "google_storage_bucket_iam_member" "service_account_storage_project_admin_on_furniture" {
   bucket = google_storage_bucket.furniture.name
   role   = "roles/storage.admin"
   member = local.service_account_name
+}
+
+resource "google_storage_bucket_iam_member" "service_account_storage_render_admin_on_furniture" {
+  bucket = google_storage_bucket.furniture.name
+  role   = "roles/storage.admin"
+  member = var.render_service_account
 }
