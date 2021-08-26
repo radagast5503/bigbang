@@ -10,7 +10,10 @@ locals {
     random_id.random_project_id_suffix.hex,
   ) : local.base_project_id
   activate_apis = ["compute.googleapis.com", "pubsub.googleapis.com", "storage-component.googleapis.com"
-                  ,"secretmanager.googleapis.com"]
+                  ,"secretmanager.googleapis.com"
+                  , "serviceusage.googleapis.com",
+                  "run.googleapis.com",
+                  "cloudbuild.googleapis.com"]
   service_account_name = format(
     "serviceAccount:%s",
     google_service_account.service_account.email,
@@ -71,6 +74,8 @@ module "vpc" {
   depends_on = [module.project_services]
 }
 
+
+//======================================================
 resource "google_service_account" "service_account" {
   account_id   = "muebles-ra-sa"
   display_name = "muebles-ra Project service account"
@@ -129,6 +134,7 @@ resource "google_compute_subnetwork_iam_member" "service_account_role_to_vpc_sec
   member     = local.service_account_name
   depends_on = [module.vpc]
 }
+//================================================
 
 resource "google_storage_bucket" "terraform" {
     name = local.terraform_bucket_name
@@ -171,3 +177,4 @@ resource "google_storage_bucket_iam_member" "service_account_storage_render_admi
   role   = "roles/storage.admin"
   member = var.render_service_account
 }
+//=========================================================
