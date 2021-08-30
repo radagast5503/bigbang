@@ -50,6 +50,12 @@ resource "google_storage_bucket_iam_member" "service_account_storage_project_adm
   member = local.service_account_name
 }
 
+resource "google_storage_bucket_iam_member" "service_account_storage_publisher_pubsub_on_furniture" {
+  bucket = google_storage_bucket.furniture.name
+  role   = "roles/pubsub.publisher"
+  member = local.service_account_name
+}
+
 resource "google_storage_bucket_iam_member" "service_account_storage_render_admin_on_furniture" {
   bucket = google_storage_bucket.furniture.name
   role   = "roles/storage.admin"
