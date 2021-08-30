@@ -57,7 +57,7 @@ resource "google_storage_bucket_iam_member" "service_account_storage_render_admi
 }
 
 resource "google_storage_notification" "notification" {
-    bucket = google_storage_bucket.furniture
+    bucket = google_storage_bucket.furniture.name
     payload_format = "JSON_API_V1"
     topic = google_pubsub_topic.image_dropbox
     event_types = ["OBJECT_FINALIZE"]
