@@ -9,10 +9,16 @@ resource "google_pubsub_topic" "image_dropbox" {
 data "google_storage_project_service_account" "gcs_account" {
 }
 
-resource "google_pubsub_topic_iam_binding" "binding" {
+resource "google_pubsub_topic_iam_binding" "gcs_binding" {
   topic   = google_pubsub_topic.image_dropbox.id
   role    = "roles/pubsub.publisher"
   members = ["serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"]
+}
+
+resource "google_pubsub_topic_iam_binding" "project_binding" {
+  topic   = google_pubsub_topic.image_dropbox.id
+  role    = "roles/pubsub.publisher"
+  members = [local.service_account_name]
 }
 
 //================================================
