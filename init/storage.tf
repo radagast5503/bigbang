@@ -6,10 +6,13 @@ resource "google_pubsub_topic" "image_dropbox" {
     project = google_project.main.project_id
 }
 
+data "google_storage_project_service_account" "gcs_account" {
+}
+
 resource "google_pubsub_topic_iam_binding" "binding" {
   topic   = google_pubsub_topic.image_dropbox.id
   role    = "roles/pubsub.publisher"
-  members = [local.service_account_name]
+  members = ["serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"]
 }
 
 //================================================
@@ -47,12 +50,6 @@ resource "google_storage_bucket" "furniture" {
 resource "google_storage_bucket_iam_member" "service_account_storage_project_admin_on_furniture" {
   bucket = google_storage_bucket.furniture.name
   role   = "roles/storage.admin"
-  member = local.service_account_name
-}
-
-resource "google_storage_bucket_iam_member" "service_account_storage_publisher_pubsub_on_furniture" {
-  bucket = google_storage_bucket.furniture.name
-  role   = "roles/pubsub.publisher"
   member = local.service_account_name
 }
 
