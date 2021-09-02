@@ -7,18 +7,13 @@ resource "google_pubsub_topic" "image_dropbox" {
 }
 
 data "google_storage_project_service_account" "gcs_account" {
+    project = google_project.main.project_id
 }
 
-resource "google_pubsub_topic_iam_binding" "gcs_binding" {
+resource "google_pubsub_topic_iam_binding" "binding" {
   topic   = google_pubsub_topic.image_dropbox.id
   role    = "roles/pubsub.publisher"
-  members = ["serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"]
-}
-
-resource "google_pubsub_topic_iam_binding" "project_binding" {
-  topic   = google_pubsub_topic.image_dropbox.id
-  role    = "roles/pubsub.publisher"
-  members = [local.service_account_name]
+  members = ["serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}", "${local.service_account_name}"]
 }
 
 //================================================
@@ -36,6 +31,7 @@ resource "google_storage_bucket" "terraform" {
 resource "google_storage_bucket" "furniture" {
   name          = local.furniture_bucket_name
   project       = google_project.main.project_id
+  location      = "SOUTHAMERICA-EAST1"  
   force_destroy = true
   storage_class = "STANDARD"
   labels = {
